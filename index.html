@@ -1,0 +1,769 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Taiwan Pride 🌈｜Reservation Payment｜10/24 週五晚餐名單</title>
+<style>
+  :root{
+    /* S2 風格色盤 */
+    --bg:#0A0B0F; --card:#10131A; --muted:#9AA4AF; --fg:#F2F5F8; --border:#1f2430;
+    --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+    --rainbow: linear-gradient(90deg,#ff5f6d,#ffc371,#9be15d,#00e3ae,#45aaf2,#9b59b6);
+    --btn-grad: linear-gradient(90deg,#7dd3fc,#86efac);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",ui-sans-serif,system-ui;
+    background: radial-gradient(800px 600px at 10% -10%, rgba(255,255,255,.06), transparent), var(--bg);
+    color:var(--fg);
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:980px;margin:28px auto 64px;padding:0 14px}
+
+  /* 標題三行（白字＋光暈） */
+  .tl .t1,.tl .t2,.tl .t3{color:#fff;text-shadow:0 0 8px rgba(255,255,255,.28),0 0 18px rgba(255,255,255,.12)}
+  .tl .t1{font-size:28px;font-weight:900;line-height:1.15}
+  .tl .t2{font-size:22px;font-weight:800;opacity:.95}
+  .tl .t3{font-size:16px;font-weight:700;opacity:.9}
+  .rainbow-line{height:2px;background:var(--rainbow);opacity:.6;border-radius:2px;margin:6px 0 14px}
+
+  /* 搜尋/控制區塊 */
+  .card{
+    position:relative;border-radius:16px;padding:14px;border:1px solid rgba(255,255,255,.06);
+    background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+    box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.03);
+    margin-bottom:12px;
+  }
+  .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end}
+  label{font-size:12px;color:var(--muted);margin-bottom:4px;display:block}
+  .input-wrap{display:flex;flex-direction:column;min-width:0}
+  input,button,select{
+    width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--border);
+    background:#0f1117;color:#0fffd1; /* 遵循舊版連結按鈕字色 */
+    outline:none;font-size:14px
+  }
+  input{ color:var(--fg); }
+  input::placeholder{color:#6b7280}
+  button.primary{background:var(--btn-grad);border:0;color:#0b0c10;font-weight:900;letter-spacing:.2px}
+  button.primary:hover{filter:saturate(1.08);}
+
+  /* 統計列（頁面上方，保留中英） */
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 6px}
+  .chip{display:flex;align-items:center;gap:8px;background:#0f1117;border:1px solid #2b3244;border-radius:999px;padding:6px 10px}
+  .chip .dot{width:8px;height:8px;border-radius:50%}
+  .chip.total .dot{background:#a3e635}
+  .chip.paid .dot{background:#22c55e}
+  .chip.unpaid .dot{background:#ef4444}
+  .chip .lab{font-size:12px;color:#aeb7c2}
+  .chip .num{font-size:13px;color:#fff;min-width:16px;text-align:right}
+
+  /* 結果列表 */
+  .grid{display:flex;flex-direction:column;gap:8px}
+  .person{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;display:grid;gap:8px;cursor:pointer}
+  .line{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .left,.right{display:flex;gap:10px;align-items:center;min-width:0}
+  .namebar{display:flex;align-items:center;gap:8px;min-width:0}
+  .flag{font-size:18px}
+  .personN{font-weight:900;font-size:15px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ig{font-size:13px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .country{opacity:.6}
+
+  /* 金色漸層（沿用舊樣式） */
+  .goldtext{
+    background: linear-gradient(180deg,#EAD28A 0%,#D9B550 35%,#B98A32 70%,#7A6027 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-weight:900;
+  }
+
+  /* pay_status 徽章 */
+  .pay{display:inline-flex;align-items:center;gap:8px}
+  .badge{position:relative;width:22px;height:22px;display:grid;place-items:center;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+  .badge svg{width:22px;height:22px;display:block}
+  .badge .ring{fill:#0f1117;stroke-width:2.6}
+  .badge .glyph{stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;fill:none}
+  .label{display:flex;flex-direction:column;line-height:1.05}
+  .label .zh{font-size:12px}
+  .label .en{font-size:11px;opacity:.9}
+  .paid .ring{stroke:var(--ok)}
+  .unpaid .ring{stroke:var(--bad)}
+
+  /* IG 圖示 */
+  .link-btn{display:inline-grid;place-items:center;width:28px;height:28px;border:none;background:transparent}
+  .link-btn img{width:24px;height:24px;border-radius:6px;display:block}
+
+  /* Toast & Modal */
+  .toast{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);background:#0f1117;border:1px solid #2b3244;color:#e5e7eb;padding:8px 12px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.45);opacity:0;transition:opacity .25s;z-index:60}
+  .toast.show{opacity:1}
+  .backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:50}
+  .modal{width:min(560px,92vw);background:#0f1117;border-radius:16px;border:1px solid #2b3244;padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .modal .title2{margin:0 0 10px;font-size:18px;font-weight:800}
+  .modal .rb{height:2px;background:var(--rainbow);opacity:.5;border-radius:2px;margin-bottom:10px}
+  .modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
+
+  /* —— 彈窗按鈕沿用「邀請函下載」按鈕的螢光外觀 —— */
+  .modal .actions .btn{
+    border: none !important;
+    background: rgba(0,255,209,.08) !important;
+    box-shadow: 0 0 0 1px rgba(0,255,209,.25),
+                0 0 18px rgba(0,255,209,.18) inset,
+                0 0 20px rgba(0,255,209,.15) !important;
+    color: #e5e7eb !important;
+    font-weight: 800 !important;
+    padding: 6px 9px !important;
+    border-radius: 10px !important;
+    cursor:pointer;
+  }
+  .modal .actions .btn:hover{
+    background: rgba(0,255,209,.08) !important;
+    box-shadow: 0 0 0 1px rgba(0,255,209,.35),
+                0 0 22px rgba(0,255,209,.22) inset,
+                0 0 24px rgba(0,255,209,.20) !important;
+    border: 1px solid transparent !important;
+    border-image: var(--rainbow) 1 !important;
+  }
+  .btn{padding:8px 10px;border-radius:12px;border:1px solid #2b3244;background:#0f1117;color:#e5e7eb;font-weight:800;cursor:pointer}
+
+  /* 付款彈窗內的單選選項 */
+  .payopts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .opt{flex:1;min-width:160px;text-align:center;padding:10px;border-radius:12px;border:1px dashed #2b3244;cursor:pointer;background:#0f1117;color:#9aa4af;font-weight:900}
+  .opt.active{border:0;background:var(--btn-grad);color:#0b0c10}
+
+  /* 概覽（依 Leader 分組） */
+  .ov-section{margin-top:14px}
+  .leader-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+  .leader-card{background:#10131A;border:1px solid #2b3244;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;position:relative}
+  .leader-head{display:flex;align-items:center;justify-content:space-between}
+  .leader-left{display:flex;align-items:center;gap:8px;min-width:0}
+  .leader-name{
+    font-weight:900;
+    background: var(--rainbow);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .leader-name.overview{
+    background:none;
+    -webkit-background-clip:unset;
+    background-clip:unset;
+    color:#C7CED6; /* 總覽銀色 */
+  }
+  .leader-meta{font-size:12px;color:#9AA4AF;display:flex;align-items:center;gap:8px}
+  .meta-icon{display:inline-grid;place-items:center}
+  .meta-icon svg{width:16px;height:16px;display:block}
+  .leader-actions{display:flex;gap:8px}
+  .leader-toggle{padding:4px 8px;border-radius:9px;border:1px solid #2b3244;background:#0f1117;color:#e5e7eb;font-size:12px;cursor:pointer}
+  .leader-toggle:hover{border-image:var(--rainbow) 1;border-width:1px;border-style:solid}
+  .leader-list{display:flex;flex-direction:column;gap:6px}
+  .member-line{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.02);border:1px dashed #2b3244;border-radius:8px;padding:6px 8px;cursor:pointer}
+  .member-line:hover{background:rgba(255,255,255,.04)}
+  .mini{display:flex;align-items:center;gap:8px;min-width:0}
+  .mini .m-name{font-size:12px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mini .m-ig{font-size:11px;color:#9AA4AF;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* 概覽顯示/隱藏控制：六色彩虹按鈕（收合時才出現） */
+  .ov-toggle{
+    position:fixed;left:50%;bottom:12px;transform:translateX(-50%);
+    display:none;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;
+    background:#0f1117;border:1px solid #2b3244;cursor:pointer;z-index:40;
+  }
+  .ov-toggle .dot{
+    width:12px;height:12px;border-radius:999px;background:conic-gradient(#EF4444,#F59E0B,#FACC15,#22C55E,#3B82F6,#8B5CF6,#EF4444);
+    box-shadow:0 0 10px rgba(255,255,255,.08) inset, 0 2px 8px rgba(0,0,0,.35);
+  }
+  .ov-toggle:hover{border-image:var(--rainbow) 1;border-width:1px;border-style:solid}
+
+  /* 個別隱藏列（六色彩虹圓點恢復） */
+  #ovHiddenBar{display:none;margin-top:8px;padding:8px 10px;border-top:1px solid #2b3244;background:#0f1117;border-radius:12px}
+  #ovHiddenTop{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+  #ovHiddenList{display:flex;flex-wrap:wrap;gap:12px;max-height:96px;overflow:auto;padding:2px 0 6px}
+  .hchip{display:flex;align-items:center;gap:8px}
+  .hchip .dot{width:14px;height:14px;border-radius:999px;box-shadow:0 0 0 1px #2b3244 inset, 0 2px 8px rgba(0,0,0,.35);cursor:pointer}
+  .hchip .label{font-size:11px;color:#9AA4AF;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* 👁 隱藏按鈕：改為跟在桌長名字左邊，垂直置中 */
+  .leader-hide{
+    position:static;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:24px;
+    height:24px;
+    border:none;
+    background:transparent;
+    color:#9AA4AF;
+    cursor:pointer;
+    font-size:16px;
+    line-height:1;
+    transition:filter .15s ease;
+  }
+  .leader-hide:hover{filter:drop-shadow(0 0 6px rgba(255,255,255,.15))}
+
+  /* —— 控制面板四顆按鈕的排版：水平排列、保留間距、不連在一起 —— */
+  .fabrow{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:8px;
+  }
+  .fab{
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:#0f1117;
+    color:#e5e7eb;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .fab.primary{
+    background:var(--btn-grad);
+    color:#0b0c10;
+    border:0;
+  }
+
+  /* Spinner */
+  .spinner{display:inline-block;width:14px;height:14px;margin-left:8px;vertical-align:-2px;border:2px solid rgba(255,255,255,.18);border-top-color:#a7f3d0;border-radius:50%;animation:spin .9s linear infinite;box-shadow:0 0 10px rgba(167,243,208,.35)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media (max-width:860px){
+    .row{grid-template-columns:1fr}
+    .fabrow{justify-content:flex-start}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 標題 -->
+  <div class="tl">
+    <div class="t1">Taiwan Pride 🌈</div>
+    <div class="t2">Reservation Payment</div>
+    <div class="t3">10/24 週五晚餐名單</div>
+  </div>
+  <div class="rainbow-line"></div>
+
+  <!-- 統計（頂部保留原樣） -->
+  <div id="stats" class="stats">
+    <div class="chip total"><span class="dot"></span><span class="lab">總計 / Total</span><b class="num" id="sTotal">0</b></div>
+    <div class="chip paid"><span class="dot"></span><span class="lab">已繳費 / Paid</span><b class="num" id="sPaid">0</b></div>
+    <div class="chip unpaid"><span class="dot"></span><span class="lab">未繳費 / Unpaid</span><b class="num" id="sUnpaid">0</b></div>
+  </div>
+
+  <!-- 控制面板 -->
+  <div class="card">
+    <div class="row">
+      <div class="input-wrap">
+        <label>姓名 / NAME</label>
+        <input id="nameInput" list="nameList" placeholder="輸入或選擇姓名 / Type or choose a name"/>
+        <datalist id="nameList"></datalist>
+      </div>
+      <div class="input-wrap">
+        <label>IG 帳號 / IG</label>
+        <input id="igInput" list="igList" placeholder="輸入或選擇 IG / Type or choose IG"/>
+        <datalist id="igList"></datalist>
+      </div>
+      <div class="input-wrap">
+        <button id="btnSearch" class="primary">手動查找 / Manual Search</button>
+      </div>
+    </div>
+
+    <div class="fabrow">
+      <button id="btnScan" class="fab primary">掃描 QR / Scan QR</button>
+      <button id="btnRefresh" class="fab">重新整理 / Refresh</button>
+      <button id="btnDiagnose" class="fab">診斷 / Diagnose</button>
+    </div>
+  </div>
+
+  <!-- 查找結果抬頭 -->
+  <div id="head" class="card" style="padding:10px">
+    <span id="headMsg">資料載入中… / Loading roster…</span><span class="spinner" aria-hidden="true"></span>
+  </div>
+  <div id="grid" class="grid"></div>
+
+  <!-- 概覽（Leader 分組；可整段收合；個別隱藏） -->
+  <div id="ovSection" class="ov-section">
+    <div class="leader-head" style="margin-bottom:6px">
+      <div class="leader-name overview">總覽 / Overview</div>
+      <div class="leader-meta" id="ovHint">依 Leader 分組 · Grouped by Leader</div>
+      <button id="btnOvHide" class="leader-toggle" title="隱藏總覽">隱藏 / Hide</button>
+    </div>
+    <div id="leaderGrid" class="leader-grid"></div>
+    <div id="ovHiddenBar">
+      <div id="ovHiddenTop">
+        <div class="leader-meta">已隱藏：<b id="ovHiddenCount">0</b></div>
+        <button id="ovUnhideAll" class="leader-toggle">取消全部隱藏</button>
+      </div>
+      <div id="ovHiddenList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 收合時顯示的六色彩虹開關 -->
+<button id="btnOvShow" class="ov-toggle" title="顯示總覽 / Show Overview">
+  <span class="dot" aria-hidden="true"></span><span>總覽 Overview</span>
+</button>
+
+<!-- 付款彈窗（搜尋/QR 後直接開） -->
+<div id="payBackdrop" class="backdrop">
+  <div class="modal">
+    <div class="title2">付款狀態 / Payment Status</div>
+    <div class="rb"></div>
+    <div id="payInfo"></div>
+
+    <!-- 單選 + 送出 -->
+    <div class="payopts">
+      <div id="optUnpaid" class="opt" data-val="unpaid">未付款 / Unpaid</div>
+      <div id="optPaid" class="opt" data-val="paid">已付款 / Paid</div>
+    </div>
+    <div class="actions">
+      <button id="paySubmit" class="btn">送出 / Submit</button>
+      <button id="payClose" class="btn">關閉 / Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- 隱藏的檔案 input 供「QR 圖片備援」 -->
+<input id="qrFile" type="file" accept="image/*" style="display:none" />
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+/* ===== (1) 設定：換成你的 GAS URL ===== */
+const WEB_APP_URL ='https://script.google.com/macros/s/AKfycbw3dJwzz_criHUK0HVw2knPETzcvpLYtSnj8vT_JJ8ayt7JW5_po_DE5plY7ZwKoLK-og/exec';
+const PAY_PASSWORD = '05140714';
+
+/* ===== (2) 狀態 ===== */
+const state = {
+  rows: [],          // 雲端 roster
+  indexByItem: new Map(),
+  selected: null,    // 付款彈窗選中的人
+  chosenPay: null,   // 'paid' / 'unpaid'
+  ovHidden: false,   // 概覽是否收合
+};
+
+const hiddenLeaders = new Set();
+const RAINBOW = ['#EF4444','#F59E0B','#FACC15','#22C55E','#3B82F6','#8B5CF6'];
+
+/* ===== (3) 小工具 ===== */
+const $ = (id)=>document.getElementById(id);
+const norm = (s)=> (s||'').toString().trim().toLowerCase();
+const showToast = (msg)=>{
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 1600);
+};
+const headMsg = (html, spinning=false)=>{
+  $('head').innerHTML = '';
+  const span = document.createElement('span'); span.id='headMsg';
+  span.innerHTML = html;
+  $('head').appendChild(span);
+  if(spinning){ const sp=document.createElement('span'); sp.className='spinner'; $('head').appendChild(sp); }
+};
+
+/* 小圖示（勾/叉） */
+const SVG_CHECK = '<span class="meta-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#0f1117" stroke="#22c55e" stroke-width="2.6"/><path d="M7 12.5l3 3 6-6" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>';
+const SVG_CROSS = '<span class="meta-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#0f1117" stroke="#ef4444" stroke-width="2.6"/><path d="M8 8l8 8M16 8l-8 8" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>';
+
+/* ===== (4) 讀取雲端（進頁就載 & 渲染總覽） ===== */
+async function fetchRoster(){
+  try{
+    headMsg('資料載入中… / Loading roster…', true);
+    const res = await fetch(WEB_APP_URL + '?mode=roster', {cache:'no-store'});
+    const data = await res.json();
+    const rows = Array.isArray(data) ? data : (data.rows || []);
+    rows.forEach(r=>{ if(!('pay_status' in r) || !r.pay_status) r.pay_status = 'unpaid'; });
+    state.rows = rows;
+    state.indexByItem.clear();
+    for(const r of rows){ if(r.item) state.indexByItem.set(String(r.item), r); }
+    rebuildDatalists();
+    renderStats();
+    headMsg('請以「掃描 QR」或「手動查找」操作 · Use Scan or Manual Search', false);
+    renderOverview();
+  }catch(err){
+    console.error(err);
+    headMsg('名單載入失敗（可能不是 JSON 或 CORS）/ Failed to load roster', false);
+  }
+}
+
+function rebuildDatalists(){
+  const dlN = $('nameList'); const dlI = $('igList');
+  dlN.innerHTML=''; dlI.innerHTML='';
+  const names = [...new Set(state.rows.map(r=>r.name).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const igs   = [...new Set(state.rows.map(r=>r.ig).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  names.forEach(v=>{ const o=document.createElement('option'); o.value=v; dlN.appendChild(o); });
+  igs.forEach(v=>{ const o=document.createElement('option'); o.value=v; dlI.appendChild(o); });
+}
+
+/* ===== (5) 統計 ===== */
+function renderStats(){
+  const total = state.rows.length;
+  const paid  = state.rows.filter(r=> norm(r.pay_status)==='paid').length;
+  const unpaid = total - paid;
+  $('sTotal').textContent = total;
+  $('sPaid').textContent  = paid;
+  $('sUnpaid').textContent= unpaid;
+}
+
+/* ===== (6) 搜尋（手動）→ 直接彈窗；多筆只列出「符合的那些人」 ===== */
+$('btnSearch').addEventListener('click', manualSearch);
+$('nameInput').addEventListener('keydown', e=>{ if(e.key==='Enter') manualSearch(); });
+$('igInput').addEventListener('keydown',   e=>{ if(e.key==='Enter') manualSearch(); });
+
+function manualSearch(){
+  if(!state.rows.length){ showToast('名單未就緒 / Roster not ready'); return; }
+  const qn = norm($('nameInput').value);
+  const qi = norm($('igInput').value);
+
+  // 精準比對 → 直接彈窗
+  if(qi){ const row = state.rows.find(r=> norm(r.ig)===qi); if(row) { openPayModal(row); return; } }
+  if(qn){ const row = state.rows.find(r=> norm(r.name)===qn); if(row) { openPayModal(row); return; } }
+
+  // 關鍵字包含：只列出「符合的條目」，不帶出同 leader 全桌
+  const cand = state.rows.filter(r =>
+    (qi && norm(r.ig).includes(qi)) || (qn && norm(r.name).includes(qn))
+  );
+
+  if(cand.length===1){ openPayModal(cand[0]); return; }
+  renderOnlyMatches(cand);
+}
+
+function renderOnlyMatches(rows){
+  const grid = $('grid'); grid.innerHTML = '';
+  if(!rows || !rows.length){ headMsg('查無資料 / No results', false); return; }
+  headMsg(`符合 ${rows.length} 筆 / matched records`, false);
+
+  rows
+    .slice()
+    .sort((a,b)=> (a.country||'').localeCompare(b.country||'') || (a.name||'').localeCompare(b.name||''))
+    .forEach(r=> grid.appendChild(renderPerson(r)));
+}
+
+function renderPerson(r){
+  const card = document.createElement('div'); card.className='person';
+  card.addEventListener('click', ()=> openPayModal(r)); // 點卡片開彈窗
+
+  // 第一行：flag / country / name / ig（name/ig 金色漸層）
+  const L1 = document.createElement('div'); L1.className='line';
+  const left1 = document.createElement('div'); left1.className='left namebar';
+  const flag = document.createElement('div'); flag.className='flag'; flag.textContent = r.flag || '—';
+  const ctry = document.createElement('span'); ctry.className='country'; ctry.textContent = r.country || '—';
+  const name = document.createElement('span'); name.className='personN goldtext'; name.textContent = r.name || '—';
+  const ig   = document.createElement('span'); ig.className='ig goldtext';   ig.textContent   = r.ig   || '—';
+  left1.append(flag, ctry, name, ig);
+  L1.append(left1);
+
+  // 第二行：pay_status + link（顯示目前狀態）
+  const L2 = document.createElement('div'); L2.className='line';
+  const left2 = document.createElement('div'); left2.className='left';
+  left2.append(buildPay(r.pay_status, true));
+  const right2 = document.createElement('div'); right2.className='right';
+  if(r.link){
+    const a = document.createElement('a'); a.href = r.link; a.target='_blank'; a.rel='noopener noreferrer'; a.className='link-btn';
+    const img = document.createElement('img'); img.src='pngsucai_1605688_ec16ce.png'; img.alt='Open link';
+    a.appendChild(img); right2.appendChild(a);
+  }
+  L2.append(left2, right2);
+
+  card.append(L1,L2);
+  return card;
+}
+
+function buildPay(status, iconsOnly=false){
+  const s = norm(status)==='paid' ? 'paid' : 'unpaid';
+  const box = document.createElement('div'); box.className='pay';
+  const badge = document.createElement('div'); badge.className='badge '+s;
+  badge.innerHTML = s==='paid'
+    ? `<svg viewBox="0 0 24 24"><circle class="ring" cx="12" cy="12" r="10.5"/><path class="glyph" d="M7 12.5l3 3 6-6"/></svg>`
+    : `<svg viewBox="0 0 24 24"><circle class="ring" cx="12" cy="12" r="10.5"/><path class="glyph" d="M8 8l8 8M16 8l-8 8"/></svg>`;
+  // 顏色
+  const circle = badge.querySelector('circle');
+  if(circle){
+    if(s==='paid') circle.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--ok')||'#22c55e');
+    if(s==='unpaid') circle.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--bad')||'#ef4444');
+  }
+  box.append(badge);
+  if(!iconsOnly){
+    const lab = document.createElement('div'); lab.className='label';
+    lab.innerHTML = s==='paid'
+      ? `<span class="zh">已繳費</span><span class="en">Paid</span>`
+      : `<span class="zh">未繳費</span><span class="en">Unpaid</span>`;
+    box.append(lab);
+  }
+  return box;
+}
+
+/* ===== (7) 付款彈窗：flag/name/ig/pay_status（name/ig 金色漸層） ===== */
+const payBackdrop = $('payBackdrop');
+const paySubmit = $('paySubmit');
+$('payClose').addEventListener('click', ()=> { payBackdrop.style.display='none'; state.chosenPay=null; setOptActive(null); });
+$('optPaid').addEventListener('click', ()=> setOptActive('paid'));
+$('optUnpaid').addEventListener('click', ()=> setOptActive('unpaid'));
+
+function setOptActive(val){
+  state.chosenPay = val;
+  document.querySelectorAll('.opt').forEach(o=>o.classList.remove('active'));
+  if(val==='paid') $('optPaid').classList.add('active');
+  if(val==='unpaid') $('optUnpaid').classList.add('active');
+}
+
+function openPayModal(person){
+  state.selected = person;
+  setOptActive(null);
+  const gold = (s)=> `<b class="goldtext">${escapeHtml(s||'—')}</b>`;
+  const html = `
+    <div>國旗 / Flag：<b>${escapeHtml(person.flag||'—')}</b></div>
+    <div>姓名 / Name：${gold(person.name)}</div>
+    <div>IG：${gold(person.ig)}</div>
+    <div>目前狀態 / Current：<b>${norm(person.pay_status)==='paid'?'已繳費 / Paid':'未繳費 / Unpaid'}</b></div>
+  `;
+  $('payInfo').innerHTML = html;
+  payBackdrop.style.display='flex';
+}
+
+function escapeHtml(s){
+  return (s||'').toString().replace(/[&<>\"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' })[m]);
+}
+
+paySubmit.addEventListener('click', async ()=>{
+  if(!state.selected){ payBackdrop.style.display='none'; return; }
+  if(!state.chosenPay){ showToast('請選擇「已付款或未付款」'); return; }
+  // 密碼保護
+  const p = prompt('請輸入付款更新密碼 / Enter password');
+  if(p === null) return;
+  if(p !== PAY_PASSWORD){ showToast('密碼錯誤 / Wrong password'); return; }
+  await updatePay(state.chosenPay);
+});
+
+async function updatePay(val){
+  const person = state.selected;
+  try{
+    const payload = { action:'updatePayStatus', item:String(person.item||''), pay_status:val };
+    const ok = await postMaybeOk(payload);
+    if(!ok) throw new Error('SERVER_NOK');
+    // 同步本地
+    person.pay_status = val;
+    const local = state.indexByItem.get(String(person.item||''));
+    if(local) local.pay_status = val;
+    renderStats();
+    // 如仍有列表，刷新提示
+    manualSearch();
+    renderOverview();
+    showToast('已更新付款狀態 / Payment updated');
+  }catch(e){
+    console.error(e);
+    showToast('更新失敗 / Update failed');
+  }finally{
+    payBackdrop.style.display='none';
+    state.chosenPay=null;
+    setOptActive(null);
+  }
+}
+
+/* 能容忍多種後端 Content-Type / CORS 策略 */
+async function postMaybeOk(bodyObj){
+  if(await tryFetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(bodyObj), mode:'cors', cache:'no-store' })) return true;
+  if(await tryFetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(bodyObj), mode:'cors', cache:'no-store' })) return true;
+  const form = new URLSearchParams(); Object.entries(bodyObj).forEach(([k,v])=> form.append(k,String(v)));
+  if(await tryFetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: form.toString(), mode:'no-cors', cache:'no-store' })) return true;
+  return false;
+}
+async function tryFetch(url, init){
+  try{
+    const res = await fetch(url, init);
+    if(res.type==='opaque') return true;
+    if(res.ok) return true;
+    try{ const j = await res.json(); return !!(j && (j.ok || Array.isArray(j))); }catch(_){}
+    return false;
+  }catch(_){ return false; }
+}
+
+/* ===== (8) 概覽（依 Leader 分組；只顯示狀態，點列才開彈窗；可整段收合；個別隱藏） ===== */
+$('btnOvHide').addEventListener('click', ()=>{ state.ovHidden=true; syncOvToggle(); });
+$('btnOvShow').addEventListener('click', ()=>{ state.ovHidden=false; syncOvToggle(); });
+
+function syncOvToggle(){
+  $('ovSection').style.display = state.ovHidden ? 'none' : '';
+  $('btnOvShow').style.display = state.ovHidden ? 'flex' : 'none';
+}
+
+function renderOverview(){
+  syncOvToggle();
+  const grid = $('leaderGrid'); grid.innerHTML='';
+  if(!state.rows.length){ grid.innerHTML = `<div class="leader-meta">尚未載入名單 / Not loaded</div>`; return; }
+
+  // 分組
+  const groups = new Map();
+  for(const r of state.rows){
+    const key = (r.leader||'—').trim();
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r);
+  }
+
+  for(const [leader, members] of groups){
+    if(hiddenLeaders.has(leader)) continue; // 個別隱藏
+    const paid = members.filter(m=> norm(m.pay_status)==='paid').length;
+    const unpaid = members.length - paid;
+
+    const card = document.createElement('div'); card.className='leader-card';
+
+    const head = document.createElement('div'); head.className='leader-head';
+
+    // 左側：👁 + leader name
+    const left = document.createElement('div'); left.className='leader-left';
+    const hideBtn = document.createElement('button');
+    hideBtn.className='leader-hide'; hideBtn.title='隱藏此桌長 / Hide this leader'; hideBtn.textContent='👁';
+    hideBtn.addEventListener('click', ()=>{ hiddenLeaders.add(leader); renderOverview(); renderHiddenBar(); });
+    const title = document.createElement('div'); title.className='leader-name'; title.textContent = leader || '—';
+    left.append(hideBtn, title);
+
+    // 右側 meta
+    const meta = document.createElement('div'); meta.className='leader-meta';
+    meta.innerHTML = `${members.length} 人 · ${SVG_CHECK}${paid} · ${SVG_CROSS}${unpaid}`;
+
+    head.append(left, meta);
+
+    const actions = document.createElement('div'); actions.className='leader-actions';
+    const btnToggle = document.createElement('button'); btnToggle.className='leader-toggle'; btnToggle.textContent='查看清單 / View';
+    actions.append(btnToggle);
+
+    const list = document.createElement('div'); list.className='leader-list'; list.style.display='none';
+    members
+      .slice()
+      .sort((a,b)=> (a.name||'').localeCompare(b.name||''))
+      .forEach(m=>{
+        const line = document.createElement('div'); line.className='member-line';
+        line.title = '點擊修改付款狀態 / Click to change payment';
+        line.addEventListener('click', ()=> openPayModal(m));
+
+        const leftM = document.createElement('div'); leftM.className='mini';
+        const flag = document.createElement('div'); flag.textContent = m.flag || '—';
+        const nm   = document.createElement('div'); nm.className='m-name goldtext'; nm.textContent = m.name || '—';
+        const ig   = document.createElement('div'); ig.className='m-ig goldtext';   ig.textContent = m.ig   || '';
+        leftM.append(flag,nm,ig);
+
+        const rightM = document.createElement('div'); rightM.style.display='flex'; rightM.style.gap='8px';
+        // 列表中的圖示要顯示中英文
+        rightM.append(buildPay(m.pay_status, false));
+
+        line.append(leftM,rightM);
+        list.appendChild(line);
+      });
+
+    btnToggle.addEventListener('click', ()=>{ list.style.display = (list.style.display==='none') ? '' : 'none'; });
+
+    card.append(head, actions, list);
+    grid.appendChild(card);
+  }
+}
+
+/* 個別隱藏列：以彩虹圓點恢復 */
+function renderHiddenBar(){
+  const bar = $('ovHiddenBar'); const list = $('ovHiddenList'); const cnt = $('ovHiddenCount');
+  if(!bar) return;
+  const items = [...hiddenLeaders];
+  if(cnt) cnt.textContent = String(items.length);
+  if(items.length===0){ bar.style.display='none'; if(list) list.innerHTML=''; return; }
+  bar.style.display='block';
+  if(list){
+    list.innerHTML='';
+    let i=0;
+    for(const leader of items){
+      const chip = document.createElement('div'); chip.className='hchip';
+      const dot = document.createElement('div'); dot.className='dot'; dot.style.background = RAINBOW[i % RAINBOW.length];
+      dot.title='點擊恢復 ' + leader;
+      dot.addEventListener('click', ()=>{ hiddenLeaders.delete(leader); renderOverview(); renderHiddenBar(); });
+      const lab = document.createElement('div'); lab.className='label'; lab.textContent = leader;
+      chip.append(dot, lab);
+      list.appendChild(chip);
+      i++;
+    }
+  }
+}
+$('ovUnhideAll')?.addEventListener('click', ()=>{ hiddenLeaders.clear(); renderOverview(); renderHiddenBar(); });
+
+/* ===== (9) 掃描 QR（BarcodeDetector；備援：上傳 QR 圖片） → 直接彈窗 ===== */
+$('btnScan').addEventListener('click', startScan);
+
+async function startScan(){
+  const supported = ('BarcodeDetector' in window);
+  if(supported){
+    try{
+      const detector = new window.BarcodeDetector({ formats:['qr_code'] });
+      const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }});
+      const video = document.createElement('video'); video.playsInline = true; video.srcObject = stream; await video.play();
+
+      const tick = async ()=>{
+        if(video.readyState >= 2){
+          const bitmap = await createImageBitmap(video);
+          const codes = await detector.detect(bitmap);
+          bitmap.close();
+          if(codes && codes.length){
+            await stopStream(stream);
+            const item = (codes[0].rawValue||'').trim();
+            handleScanItem(item);
+            return;
+          }
+        }
+        requestAnimationFrame(tick);
+      };
+      tick();
+      showToast('掃描中… 將 QR 對準鏡頭 / Scanning…');
+      return;
+    }catch(e){ console.warn('BarcodeDetector video path failed, fallback to file', e); }
+  }
+  // 備援：上傳圖片→detect
+  const input = $('qrFile');
+  input.onchange = async (e)=>{
+    const f = (e.target.files||[])[0];
+    if(!f){ showToast('未選取圖片 / No image selected'); return; }
+    try{
+      if(!('BarcodeDetector' in window)) throw new Error('no-detector');
+      const detector = new window.BarcodeDetector({ formats:['qr_code'] });
+      const bmp = await createImageBitmap(f);
+      const codes = await detector.detect(bmp);
+      bmp.close();
+      if(codes && codes.length){ handleScanItem((codes[0].rawValue||'').trim()); }
+      else{ showToast('解析失敗，請改用手動查找 / Parse failed, use manual search'); }
+    }catch(err){ console.warn(err); showToast('裝置不支援 QR 解析；請改用手動查找 / Not supported, use manual search'); }
+    finally{ input.value=''; }
+  };
+  input.click();
+}
+
+async function stopStream(stream){ try{ stream.getTracks().forEach(t=>t.stop()); }catch(_){}}
+
+function handleScanItem(itemStr){
+  if(!itemStr){ showToast('QR 無內容 / Empty QR'); return; }
+  const row = state.indexByItem.get(String(itemStr));
+  if(!row){ showToast('查無此 ITEM · 請確認 / Item not found'); return; }
+  openPayModal(row); // 直接彈窗
+}
+
+/* ===== (10) 重新整理 & 故障診斷 ===== */
+$('btnRefresh').addEventListener('click', ()=> fetchRoster());
+
+$('btnDiagnose').addEventListener('click', async ()=>{
+  try{
+    const res = await fetch(WEB_APP_URL + '?mode=ping', {cache:'no-store'});
+    const ct = res.headers.get('content-type') || '(無 content-type)';
+    let text = ''; try{ text = await res.text(); }catch(_){ }
+    const snippet = (text||'').slice(0, 280);
+    alert(
+      '【診斷 / Diagnose】\\n'
+      + 'URL: ' + WEB_APP_URL + '?mode=ping\\n'
+      + 'Status: ' + res.status + '\\n'
+      + 'Content-Type: ' + ct + '\\n'
+      + 'Body (前 280 字) / First 280 chars:\\n———\\n'
+      + snippet + '\\n———\\n'
+      + '若非 JSON 或 CORS 擋下，前端會在 roster 讀取時失敗。'
+    );
+  }catch(e){ alert('Ping 失敗：可能網路/CORS/權限 · Failed to ping'); }
+});
+
+/* ===== (11) 啟動 ===== */
+fetchRoster();
+</script>
+</body>
+
+</html>
