@@ -336,6 +336,7 @@ const PAY_PASSWORD = '05140714';
 
 /* ✅ 是否啟用送出時密碼驗證（暫時關閉就設 false；要再開啟改 true） */
 const ENABLE_PAY_PASSWORD = false;
+
 /* ===== (2) 狀態 ===== */
 const state = {
   rows: [],          // 雲端 roster
@@ -795,11 +796,32 @@ $('btnDiagnose').addEventListener('click', async ()=>{
 });
 
 /* ===== (11) 啟動 ===== */
+// ===== 全域錯誤攔截（部署後若有 JS 錯誤會冒泡顯示） =====
+window.addEventListener('error', (e)=>{
+  try{ console.error('[GlobalError]', e.message, e.filename, e.lineno, e.colno, e.error); }catch(_){}
+  try{ showToast('發生錯誤：' + (e.message || 'Script error')); }catch(_){}
+});
+window.addEventListener('unhandledrejection', (e)=>{
+  try{ console.error('[UnhandledRejection]', e.reason); }catch(_){}
+  try{ showToast('發生錯誤（Promise）：' + (e.reason && e.reason.message ? e.reason.message : '')); }catch(_){}
+});
 fetchRoster();
 </script>
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
