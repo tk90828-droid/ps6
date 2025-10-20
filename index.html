@@ -331,9 +331,11 @@
 
 <script>
 /* ===== (1) 設定：換成你的 GAS URL ===== */
-const WEB_APP_URL ='https://script.google.com/macros/s/AKfycbwlXC3X83MOo6kmnusFNbGvXpOnf906GaGjtGCVX_qyjh-Z8aGAqa4mVyFlU2Bf02iR/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyBxgEbiY2mnsfIX7CXj1q1poEIAbxa8qHo-ZDU09h9IzxDMyHYEDtYtzXdC9wK830j/exec';
 const PAY_PASSWORD = '05140714';
 
+/* ✅ 是否啟用送出時密碼驗證（暫時關閉就設 false；要再開啟改 true） */
+const ENABLE_PAY_PASSWORD = false;
 /* ===== (2) 狀態 ===== */
 const state = {
   rows: [],          // 雲端 roster
@@ -525,14 +527,45 @@ function escapeHtml(s){
   return (s||'').toString().replace(/[&<>\"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' })[m]);
 }
 
+/* ===== 送出付款更新：可切換密碼驗證 + 送出中轉圈 ===== */
 paySubmit.addEventListener('click', async ()=>{
-  if(!state.selected){ payBackdrop.style.display='none'; return; }
-  if(!state.chosenPay){ showToast('請選擇「已付款或未付款」'); return; }
-  // 密碼保護
-  const p = prompt('請輸入付款更新密碼 / Enter password');
-  if(p === null) return;
-  if(p !== PAY_PASSWORD){ showToast('密碼錯誤 / Wrong password'); return; }
-  await updatePay(state.chosenPay);
+  if(!state.selected){ 
+    payBackdrop.style.display='none'; 
+    return; 
+  }
+  if(!state.chosenPay){ 
+    showToast('請選擇「已付款或未付款」'); 
+    return; 
+  }
+
+  // 🔐（可選）密碼保護：依旗標決定是否詢問
+  if (ENABLE_PAY_PASSWORD) {
+    const p = prompt('請輸入付款更新密碼 / Enter password');
+    if(p === null) return;
+    if(p !== PAY_PASSWORD){ 
+      showToast('密碼錯誤 / Wrong password'); 
+      return; 
+    }
+  }
+
+  // ⏳ 送出中 UI：禁用按鈕 + 顯示 spinner
+  const prevHtml = paySubmit.innerHTML;
+  paySubmit.disabled = true;
+  paySubmit.innerHTML = '送出中… <span class="spinner" aria-hidden="true"></span>';
+
+  try{
+    await updatePay(state.chosenPay);
+  }catch(e){
+    console.error(e);
+    showToast('更新失敗 / Update failed');
+  }finally{
+    // 還原按鈕與狀態
+    paySubmit.disabled = false;
+    paySubmit.innerHTML = prevHtml;
+    state.chosenPay = null;
+    setOptActive(null);
+    payBackdrop.style.display = 'none';
+  }
 });
 
 async function updatePay(val){
@@ -767,3 +800,18 @@ fetchRoster();
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
