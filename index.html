@@ -1,4 +1,4 @@
-<!doctype html>
+<!doctype html> 
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8" />
@@ -443,7 +443,9 @@ function renderOnlyMatches(rows){
 }
 
 function renderPerson(r){
-  const card = document.createElement('div'); card.className='person';
+  const card = document.createElement('div'); 
+  card.className='person';
+  card.dataset.item = String(r.item||''); // ★ 加入 data-item 供補丁更新
   card.addEventListener('click', ()=> openPayModal(r)); // 點卡片開彈窗
 
   // 第一行：flag / country / name / ig（name/ig 金色漸層）
@@ -458,7 +460,8 @@ function renderPerson(r){
 
   // 第二行：pay_status + link（顯示目前狀態）
   const L2 = document.createElement('div'); L2.className='line';
-  const left2 = document.createElement('div'); left2.className='left';
+  const left2 = document.createElement('div'); 
+  left2.className='left paybox iconsonly'; // ★ 加入 paybox 標記（iconsOnly 版本）
   left2.append(buildPay(r.pay_status, true));
   const right2 = document.createElement('div'); right2.className='right';
   if(r.link){
@@ -525,7 +528,7 @@ function openPayModal(person){
 }
 
 function escapeHtml(s){
-  return (s||'').toString().replace(/[&<>\"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' })[m]);
+  return (s||'').toString().replace(/[&<>\"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]);
 }
 
 /* ===== 送出付款更新：可切換密碼驗證 + 送出中轉圈 ===== */
@@ -569,32 +572,48 @@ paySubmit.addEventListener('click', async ()=>{
   }
 });
 
+/* ★★★★★ 只補丁更新，不重繪整頁（大幅降低延遲） ★★★★★ */
+function patchPayDom(item, val){
+  const safe = String(item||'');
+  // 1) 上方「結果清單」卡片內的 paybox（iconsonly）
+  document.querySelectorAll(`.person[data-item="${CSS.escape(safe)}"] .paybox`).forEach(el=>{
+    const iconsOnly = el.classList.contains('iconsonly');
+    el.innerHTML = '';
+    el.appendChild(buildPay(val, iconsOnly));
+  });
+  // 2) 總覽列表中每位成員右側的 paybox
+  document.querySelectorAll(`.member-line[data-item="${CSS.escape(safe)}"] .paybox`).forEach(el=>{
+    el.innerHTML = '';
+    el.appendChild(buildPay(val, /*iconsOnly*/ false));
+  });
+}
+
 async function updatePay(val){
   const person = state.selected;
   try{
     const payload = { action:'updatePayStatus', item:String(person.item||''), pay_status:val };
     const ok = await postMaybeOk(payload);
     if(!ok) throw new Error('SERVER_NOK');
-    // 同步本地
+
+    // 同步本地資料
     person.pay_status = val;
     const local = state.indexByItem.get(String(person.item||''));
     if(local) local.pay_status = val;
+
+    // 只更新統計與畫面中此人的徽章（不重建總覽與清單）
     renderStats();
-    // 如仍有列表，刷新提示
-    manualSearch();
-    renderOverview();
+    patchPayDom(person.item, val);
+
     showToast('已更新付款狀態 / Payment updated');
   }catch(e){
     console.error(e);
     showToast('更新失敗 / Update failed');
   }finally{
-    payBackdrop.style.display='none';
-    state.chosenPay=null;
-    setOptActive(null);
+    // 關閉彈窗的動作在外層 finally
   }
 }
 
-/* 能容忍多種後端 Content-Type / CORS 策略 */
+/* 能容忍多種後端 Content-Type / CORS 策略（保留，但不再多餘重渲染） */
 async function postMaybeOk(bodyObj){
   if(await tryFetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(bodyObj), mode:'cors', cache:'no-store' })) return true;
   if(await tryFetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(bodyObj), mode:'cors', cache:'no-store' })) return true;
@@ -666,7 +685,9 @@ function renderOverview(){
       .slice()
       .sort((a,b)=> (a.name||'').localeCompare(b.name||''))
       .forEach(m=>{
-        const line = document.createElement('div'); line.className='member-line';
+        const line = document.createElement('div'); 
+        line.className='member-line';
+        line.dataset.item = String(m.item||''); // ★ 加入 data-item 供補丁更新
         line.title = '點擊修改付款狀態 / Click to change payment';
         line.addEventListener('click', ()=> openPayModal(m));
 
@@ -676,8 +697,9 @@ function renderOverview(){
         const ig   = document.createElement('div'); ig.className='m-ig goldtext';   ig.textContent = m.ig   || '';
         leftM.append(flag,nm,ig);
 
-        const rightM = document.createElement('div'); rightM.style.display='flex'; rightM.style.gap='8px';
-        // 列表中的圖示要顯示中英文
+        const rightM = document.createElement('div'); 
+        rightM.style.display='flex'; rightM.style.gap='8px';
+        rightM.className = 'paybox'; // ★ 總覽中的 paybox（含中英標籤）
         rightM.append(buildPay(m.pay_status, false));
 
         line.append(leftM,rightM);
@@ -784,12 +806,12 @@ $('btnDiagnose').addEventListener('click', async ()=>{
     let text = ''; try{ text = await res.text(); }catch(_){ }
     const snippet = (text||'').slice(0, 280);
     alert(
-      '【診斷 / Diagnose】\\n'
-      + 'URL: ' + WEB_APP_URL + '?mode=ping\\n'
-      + 'Status: ' + res.status + '\\n'
-      + 'Content-Type: ' + ct + '\\n'
-      + 'Body (前 280 字) / First 280 chars:\\n———\\n'
-      + snippet + '\\n———\\n'
+      '【診斷 / Diagnose】\n'
+      + 'URL: ' + WEB_APP_URL + '?mode=ping\n'
+      + 'Status: ' + res.status + '\n'
+      + 'Content-Type: ' + ct + '\n'
+      + 'Body (前 280 字) / First 280 chars:\n———\n'
+      + snippet + '\n———\n'
       + '若非 JSON 或 CORS 擋下，前端會在 roster 讀取時失敗。'
     );
   }catch(e){ alert('Ping 失敗：可能網路/CORS/權限 · Failed to ping'); }
@@ -810,18 +832,3 @@ fetchRoster();
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
