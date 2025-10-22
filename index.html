@@ -271,7 +271,7 @@ button.primary:hover{filter:saturate(1.08);}
 /* ✅ 可調欄寬（以 CSS 變數驅動，JS 於渲染時設定） */
 .table-note col.c-flag{width:40px}
 .table-note col.c-name{width:var(--nameW,60px)}
-.table-note col.c-ig{width:var(--igW,80px)}      /* 預設 80px，可調 */
+.table-note col.c-ig{width:var(--igW,60px)}      /* 預設 60px，可調 */
 /* leader 改為固定寬（移除調整功能） */
 .table-note col.c-leader{width:80px}
 .table-note col.c-status{width:64px}
@@ -333,8 +333,8 @@ button.primary:hover{filter:saturate(1.08);}
   /* ⬇️ 重要：手機時讓 NOTE 表可橫向捲動並放大備註欄，避免被擠掉 */
   #noteTableWrap{ overflow-x:auto; }
   .table-note{ min-width:820px; } /* 保證各欄不至於擠爆 */
-  .table-note col.c-name{width:60px}
-  .table-note col.c-ig{width:80px}
+  .table-note col.c-name{width:var(--nameW,60px)}
+  .table-note col.c-ig{width:var(--igW,60px)}
   .table-note col.c-leader{width:70px}
   .table-note col.c-confirm{width:54px}
   .table-note col.c-method{width:80px}
@@ -558,7 +558,7 @@ button.primary:hover{filter:saturate(1.08);}
               <button id="wIgUp" class="wbtn" title="增加 ig 欄寬">▲</button>
               <button id="wIgDown" class="wbtn" title="減少 ig 欄寬">▼</button>
             </div>
-            <span id="wIgV" class="note-tight">80px</span>
+            <span id="wIgV" class="note-tight">60px</span>
           </div>
 
           <!-- 欄位顯示（只留關鍵字） -->
@@ -605,7 +605,7 @@ const state = {
   ovHidden: false,   // 概覽是否收合
   /* NOTE 功能（預設欄寬） */
   nameW: 60,
-  igW: 80,
+  igW: 60,
   /* 清單（Paid/Unpaid）欄寬（滑桿三項） */
   listNameW: 120,
   listIgW: 120,
@@ -1218,7 +1218,7 @@ function renderNoteTable(){
 
   // 讀取 UI 設定（欄寬 & 顯示）
   const nameW = Number($('wName')?.value || state.nameW || 60);
-  const igW = Number($('wIg')?.value || state.igW || 80);
+  const igW = Number($('wIg')?.value || state.igW || 60);
   $('wNameV').textContent = nameW + 'px';
   $('wIgV').textContent = igW + 'px';
 
